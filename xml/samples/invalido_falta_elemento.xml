@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVÁLIDO: falta el elemento obligatorio <firmaDigital>. -->
+<expediente xmlns="urn:globalhealth:expediente:v1" version="1.0">
+  <paciente id="PAC-0004">
+    <nombre>Diego Vargas</nombre>
+    <fechaNacimiento>1995-02-17</fechaNacimiento>
+  </paciente>
+  <diagnosticos>
+    <diagnostico>
+      <codigo>J00</codigo>
+      <descripcion>Rinofaringitis aguda</descripcion>
+      <fecha>2026-05-02</fecha>
+      <medicoResponsable>Dra. Ana Rodríguez</medicoResponsable>
+    </diagnostico>
+  </diagnosticos>
+  <tratamientos>
+  </tratamientos>
+</expediente>

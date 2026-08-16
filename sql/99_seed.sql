@@ -1,0 +1,1 @@
+-- Placeholder — se implementa en Fase 2/3 (datos semilla) (ver PLAN_GlobalHealth_Proyecto_Final.md)

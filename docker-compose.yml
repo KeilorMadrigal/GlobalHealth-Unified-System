@@ -1,0 +1,151 @@
+# GlobalHealth Unified System — docker-compose
+#
+# Los servicios se activan por fases (ver PLAN_GlobalHealth_Proyecto_Final.md).
+# No descomentar un servicio hasta llegar a su fase correspondiente:
+#   pg-master / pg-replica -> Fase 1
+#   pg-norte  / pg-sur     -> Fase 5
+#   api                    -> Fase 6
+#   web                    -> Fase 7
+
+networks:
+  globalhealth-net:
+    name: globalhealth-net
+    driver: bridge
+
+volumes:
+  pgmaster_data:
+  pgreplica_data:
+  pgnorte_data:
+  pgsur_data:
+
+services:
+
+  # --- Fase 1: Maestro ---
+  pg-master:
+    build:
+      context: ./docker/postgres
+    container_name: pg-master
+    environment:
+      POSTGRES_USER: ${POSTGRES_SUPERUSER}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      POSTGRES_DB: ${PGMASTER_DB}
+      PG_REPLICATION_USER: ${PG_REPLICATION_USER}
+      PG_REPLICATION_PASSWORD: ${PG_REPLICATION_PASSWORD}
+      PG_REPLICATION_SLOT: ${PG_REPLICATION_SLOT}
+      PGMASTER_USER: ${PGMASTER_USER}
+      PGMASTER_PASSWORD: ${PGMASTER_PASSWORD}
+    volumes:
+      - pgmaster_data:/var/lib/postgresql/data
+      - ./docker/master/init-master.sh:/docker-entrypoint-initdb.d/init-master.sh:ro
+      - ./docker/master/postgresql.conf:/docker-entrypoint-initdb.d/postgresql.conf:ro
+      - ./docker/master/pg_hba.conf:/docker-entrypoint-initdb.d/pg_hba.conf:ro
+      - ./xsd:/xsd:ro
+      - ./xml:/xml:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - globalhealth-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # --- Fase 1: Réplica ---
+  pg-replica:
+    build:
+      context: ./docker/postgres
+    container_name: pg-replica
+    entrypoint: ["/docker-entrypoint-replica/init-replica.sh"]
+    environment:
+      PGDATA: /var/lib/postgresql/data
+      PGMASTER_HOST: pg-master
+      PG_REPLICATION_USER: ${PG_REPLICATION_USER}
+      PG_REPLICATION_PASSWORD: ${PG_REPLICATION_PASSWORD}
+      PG_REPLICATION_SLOT: ${PG_REPLICATION_SLOT}
+    volumes:
+      - pgreplica_data:/var/lib/postgresql/data
+      - ./docker/replica/init-replica.sh:/docker-entrypoint-replica/init-replica.sh:ro
+    ports:
+      - "5433:5432"
+    networks:
+      - globalhealth-net
+    depends_on:
+      pg-master:
+        condition: service_healthy
+
+  # --- Fase 5: Nodo Norte (fragmentación horizontal + vertical) ---
+  pg-norte:
+    build:
+      context: ./docker/postgres
+    container_name: pg-norte
+    environment:
+      POSTGRES_USER: ${POSTGRES_SUPERUSER}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      POSTGRES_DB: ${PGNORTE_DB}
+      PGNORTE_USER: ${PGNORTE_USER}
+      PGNORTE_PASSWORD: ${PGNORTE_PASSWORD}
+    volumes:
+      - pgnorte_data:/var/lib/postgresql/data
+      - ./docker/shards/init-norte.sh:/docker-entrypoint-initdb.d/init-norte.sh:ro
+    ports:
+      - "5434:5432"
+    networks:
+      - globalhealth-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # --- Fase 5: Nodo Sur (fragmentación horizontal + vertical) ---
+  pg-sur:
+    build:
+      context: ./docker/postgres
+    container_name: pg-sur
+    environment:
+      POSTGRES_USER: ${POSTGRES_SUPERUSER}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      POSTGRES_DB: ${PGSUR_DB}
+      PGSUR_USER: ${PGSUR_USER}
+      PGSUR_PASSWORD: ${PGSUR_PASSWORD}
+    volumes:
+      - pgsur_data:/var/lib/postgresql/data
+      - ./docker/shards/init-sur.sh:/docker-entrypoint-initdb.d/init-sur.sh:ro
+    ports:
+      - "5435:5432"
+    networks:
+      - globalhealth-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # --- Fase 6: API ---
+  api:
+    build:
+      context: ./api
+    container_name: api
+    env_file:
+      - .env
+    ports:
+      - "${API_PORT:-3000}:3000"
+    networks:
+      - globalhealth-net
+    depends_on:
+      - pg-master
+      - pg-replica
+
+  # --- Fase 7: Interfaz web ---
+  web:
+    image: nginx:alpine
+    container_name: web
+    volumes:
+      - ./web:/usr/share/nginx/html:ro
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    networks:
+      - globalhealth-net
+    depends_on:
+      - api

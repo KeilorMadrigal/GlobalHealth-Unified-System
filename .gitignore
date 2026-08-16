@@ -1,0 +1,31 @@
+# Secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Node
+node_modules/
+npm-debug.log*
+api/dist/
+api/coverage/
+
+# Docker volumes / data (nunca versionar datos de BD)
+docker/**/pgdata/
+*.pgdata/
+
+# Docs generados
+docs/*.pdf
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Claude Code local state
+.claude/
+
+# Logs
+*.log
+logs/

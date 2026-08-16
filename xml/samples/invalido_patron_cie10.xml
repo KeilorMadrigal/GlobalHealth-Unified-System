@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVÁLIDO: el código CIE-10 "45J" no cumple el xs:pattern
+     [A-TV-Z][0-9]{2}(\.[0-9]{1,2})? (debe empezar con letra). -->
+<expediente xmlns="urn:globalhealth:expediente:v1" version="1.0">
+  <paciente id="PAC-0005">
+    <nombre>Marta Solís</nombre>
+    <fechaNacimiento>1990-06-05</fechaNacimiento>
+  </paciente>
+  <diagnosticos>
+    <diagnostico>
+      <codigo>45J</codigo>
+      <descripcion>Código CIE-10 mal formado a propósito</descripcion>
+      <fecha>2026-05-10</fecha>
+      <medicoResponsable>Dr. Carlos Méndez</medicoResponsable>
+    </diagnostico>
+  </diagnosticos>
+  <tratamientos>
+  </tratamientos>
+  <firmaDigital>5c7e9b1d3f5a7c9e1b3d5f7a9c1e3b5d</firmaDigital>
+</expediente>

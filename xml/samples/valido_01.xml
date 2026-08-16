@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<expediente xmlns="urn:globalhealth:expediente:v1" version="1.0">
+  <paciente id="PAC-0001">
+    <nombre>Ana Rodríguez</nombre>
+    <fechaNacimiento>1985-04-12</fechaNacimiento>
+  </paciente>
+  <diagnosticos>
+    <diagnostico>
+      <codigo>J45.0</codigo>
+      <descripcion>Asma predominantemente alérgica</descripcion>
+      <fecha>2026-01-10</fecha>
+      <medicoResponsable>Dr. Carlos Méndez</medicoResponsable>
+    </diagnostico>
+    <diagnostico>
+      <codigo>I10</codigo>
+      <descripcion>Hipertensión esencial</descripcion>
+      <fecha>2026-02-01</fecha>
+      <medicoResponsable>Dr. Carlos Méndez</medicoResponsable>
+    </diagnostico>
+  </diagnosticos>
+  <tratamientos>
+    <tratamiento>
+      <medicamento>Salbutamol</medicamento>
+      <dosis>100mcg</dosis>
+      <frecuencia>Cada 6 horas si hay síntomas</frecuencia>
+    </tratamiento>
+  </tratamientos>
+  <firmaDigital>3f7a9c8e1b2d4f6a8c0e2b4d6f8a0c2e</firmaDigital>
+</expediente>

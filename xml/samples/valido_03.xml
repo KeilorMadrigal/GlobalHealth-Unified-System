@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<expediente xmlns="urn:globalhealth:expediente:v1" version="1.0">
+  <paciente id="PAC-0003">
+    <nombre>Laura Jiménez</nombre>
+    <fechaNacimiento>1992-11-30</fechaNacimiento>
+  </paciente>
+  <diagnosticos>
+    <diagnostico>
+      <codigo>S72.0</codigo>
+      <descripcion>Fractura de cuello de fémur</descripcion>
+      <fecha>2026-04-18</fecha>
+      <medicoResponsable>Dr. Carlos Méndez</medicoResponsable>
+    </diagnostico>
+    <diagnostico>
+      <codigo>D64</codigo>
+      <descripcion>Anemia, no especificada</descripcion>
+      <fecha>2026-04-19</fecha>
+      <medicoResponsable>Dra. Ana Rodríguez</medicoResponsable>
+    </diagnostico>
+    <diagnostico>
+      <codigo>Y92</codigo>
+      <descripcion>Lugar de ocurrencia: vía pública</descripcion>
+      <fecha>2026-04-18</fecha>
+      <medicoResponsable>Dr. Carlos Méndez</medicoResponsable>
+    </diagnostico>
+  </diagnosticos>
+  <tratamientos>
+    <tratamiento>
+      <medicamento>Paracetamol</medicamento>
+      <dosis>1g</dosis>
+      <frecuencia>Cada 8 horas</frecuencia>
+    </tratamiento>
+    <tratamiento>
+      <medicamento>Enoxaparina</medicamento>
+      <dosis>40mg</dosis>
+      <frecuencia>Cada 24 horas, subcutánea</frecuencia>
+    </tratamiento>
+  </tratamientos>
+  <firmaDigital>1b3d5f7a9c1e3b5d7f9a1c3e5b7d9f1a</firmaDigital>
+</expediente>

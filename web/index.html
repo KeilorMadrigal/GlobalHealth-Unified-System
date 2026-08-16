@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>GlobalHealth — Consola de demostración</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    :root {
+        --bg: #0f1720;
+        --panel: #182533;
+        --panel-border: #2a3b4d;
+        --text: #f0f4f8;
+        --text-dim: #9fb0c0;
+        --verde: #22c55e;
+        --rojo: #ef4444;
+        --amarillo: #eab308;
+        --azul: #3b82f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+        font-size: 18px;
+        margin: 0;
+        padding: 24px;
+        line-height: 1.4;
+    }
+    h1 { font-size: 28px; margin: 0 0 4px; }
+    h2 { font-size: 22px; margin: 0 0 12px; border-bottom: 1px solid var(--panel-border); padding-bottom: 8px; }
+    .subtitulo { color: var(--text-dim); margin: 0 0 24px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .panel {
+        background: var(--panel);
+        border: 1px solid var(--panel-border);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .semaforos { display: flex; gap: 32px; flex-wrap: wrap; }
+    .semaforo { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .luz {
+        width: 56px; height: 56px; border-radius: 50%;
+        background: #444; border: 3px solid #333;
+        transition: none;
+    }
+    .luz.up { background: var(--verde); box-shadow: 0 0 16px var(--verde); }
+    .luz.down { background: var(--rojo); box-shadow: 0 0 16px var(--rojo); }
+    .luz.checking { background: var(--amarillo); }
+    .semaforo-label { font-weight: 600; letter-spacing: 0.5px; }
+    .badge {
+        display: inline-block; font-size: 13px; font-weight: 700;
+        padding: 3px 10px; border-radius: 999px; letter-spacing: 0.5px;
+        background: var(--azul); color: white; margin-bottom: 12px;
+    }
+    label { display: block; margin: 10px 0 4px; color: var(--text-dim); font-size: 14px; }
+    input, select, textarea {
+        width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--panel-border);
+        background: #0f1720; color: var(--text); font-size: 16px; font-family: inherit;
+    }
+    textarea { min-height: 160px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+    button {
+        margin-top: 16px; padding: 10px 20px; border-radius: 6px; border: none;
+        background: var(--azul); color: white; font-size: 16px; font-weight: 600; cursor: pointer;
+    }
+    button:hover { filter: brightness(1.1); }
+    .resultado {
+        margin-top: 14px; padding: 12px; border-radius: 6px; font-family: ui-monospace, Consolas, monospace;
+        font-size: 13px; white-space: pre-wrap; word-break: break-word; display: none;
+    }
+    .resultado.ok { background: #14321f; border: 1px solid var(--verde); display: block; }
+    .resultado.error { background: #3a1414; border: 1px solid var(--rojo); display: block; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--panel-border); font-size: 15px; }
+    th { color: var(--text-dim); font-weight: 600; }
+    .stat-row { display: flex; gap: 24px; margin-bottom: 12px; }
+    .stat { background: #0f1720; border-radius: 8px; padding: 10px 16px; }
+    .stat .num { font-size: 24px; font-weight: 700; }
+    .stat .lbl { font-size: 13px; color: var(--text-dim); }
+    .alerta-fila { color: var(--rojo); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>GlobalHealth Unified System</h1>
+<p class="subtitulo">Consola de demostración técnica — no es el producto, es la evidencia de que el cluster se consume por una API segura.</p>
+
+<script>window.API_BASE_URL = window.API_BASE_URL || "http://localhost:3000";</script>
+
+<!-- ============ Panel de estado ============ -->
+<div class="panel">
+    <h2>Estado de la infraestructura</h2>
+    <div class="semaforos">
+        <div class="semaforo">
+            <div class="luz checking" id="luz-master"></div>
+            <div class="semaforo-label">MASTER</div>
+        </div>
+        <div class="semaforo">
+            <div class="luz checking" id="luz-replica"></div>
+            <div class="semaforo-label">RÉPLICA</div>
+        </div>
+        <div class="semaforo">
+            <div class="luz checking" id="luz-atlas"></div>
+            <div class="semaforo-label">ATLAS</div>
+        </div>
+    </div>
+    <p class="subtitulo" id="health-detalle" style="margin-top:14px;"></p>
+</div>
+
+<div class="grid">
+
+    <!-- ============ Alta de personal ============ -->
+    <div class="panel">
+        <h2>Alta de personal (escritura → master)</h2>
+        <form id="form-personal">
+            <label>Tipo</label>
+            <select id="p-tipo">
+                <option value="enfermero">Enfermero/a</option>
+                <option value="tecnico_laboratorio">Técnico de laboratorio</option>
+            </select>
+            <label>Nombre</label>
+            <input id="p-nombre" required>
+            <label>Apellido</label>
+            <input id="p-apellido" required>
+            <label>Fecha de nacimiento</label>
+            <input id="p-fecha-nacimiento" type="date" required>
+            <label>Documento de identidad</label>
+            <input id="p-documento" required>
+            <label>Turno / Área de laboratorio</label>
+            <input id="p-detalle" placeholder="matutino | vespertino | nocturno, o área de lab" required>
+            <label>Unidad / Certificaciones</label>
+            <input id="p-detalle2" placeholder="Unidad (enfermero) o certificaciones separadas por coma (técnico)">
+            <button type="submit">Registrar</button>
+        </form>
+        <div class="resultado" id="resultado-personal"></div>
+    </div>
+
+    <!-- ============ Dashboard ============ -->
+    <div class="panel">
+        <h2>Dashboard (lectura → réplica)</h2>
+        <span class="badge" id="badge-dashboard">Servido por: —</span>
+        <button onclick="cargarDashboard()">Actualizar</button>
+        <div class="stat-row" id="dashboard-stats"></div>
+        <table id="tabla-clinicas">
+            <thead><tr><th>Clínica</th><th>Región</th><th>Equipos asignados</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <!-- ============ Carga de expediente XML ============ -->
+    <div class="panel">
+        <h2>Carga de expediente clínico (XML + XSD)</h2>
+        <form id="form-expediente">
+            <label>ID paciente</label>
+            <input id="e-paciente" type="number" value="10" required>
+            <label>Versión de esquema</label>
+            <input id="e-version" value="v2" required>
+            <label>Documento XML</label>
+            <textarea id="e-xml" placeholder="Pegar aquí el XML del expediente..."></textarea>
+            <button type="submit">Validar e insertar</button>
+        </form>
+        <div class="resultado" id="resultado-expediente"></div>
+    </div>
+
+    <!-- ============ Telemetría ============ -->
+    <div class="panel">
+        <h2>Telemetría (MongoDB Atlas)</h2>
+        <span class="badge" id="badge-telemetria">Servido por: —</span>
+        <button onclick="cargarAlertas()">Cargar sesiones con más alertas</button>
+        <table id="tabla-alertas">
+            <thead><tr><th>Sesión (ObjectId)</th><th>Total de alertas</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+const API = window.API_BASE_URL;
+
+// ---------- Panel de estado (poll cada 3s) ----------
+async function actualizarSalud() {
+    try {
+        const r = await fetch(`${API}/health`);
+        const j = await r.json();
+        setLuz('luz-master', j.master === 'up');
+        setLuz('luz-replica', j.replica === 'up');
+        setLuz('luz-atlas', j.atlas === 'up');
+        const detalles = [];
+        if (j.master_error) detalles.push(`master: ${j.master_error}`);
+        if (j.replica_error) detalles.push(`réplica: ${j.replica_error}`);
+        if (j.atlas_error) detalles.push(`atlas: ${j.atlas_error}`);
+        document.getElementById('health-detalle').textContent = detalles.join(' · ');
+    } catch (e) {
+        setLuz('luz-master', false);
+        setLuz('luz-replica', false);
+        setLuz('luz-atlas', false);
+        document.getElementById('health-detalle').textContent = 'No se pudo contactar la API: ' + e.message;
+    }
+}
+function setLuz(id, arriba) {
+    const el = document.getElementById(id);
+    el.classList.remove('up', 'down', 'checking');
+    el.classList.add(arriba ? 'up' : 'down');
+}
+actualizarSalud();
+setInterval(actualizarSalud, 3000);
+
+// ---------- Alta de personal ----------
+document.getElementById('form-personal').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const tipo = document.getElementById('p-tipo').value;
+    const body = {
+        tipo,
+        nombre: document.getElementById('p-nombre').value,
+        apellido: document.getElementById('p-apellido').value,
+        fecha_nacimiento: document.getElementById('p-fecha-nacimiento').value,
+        documento_identidad: document.getElementById('p-documento').value
+    };
+    if (tipo === 'enfermero') {
+        body.turno = document.getElementById('p-detalle').value;
+        body.unidad = document.getElementById('p-detalle2').value;
+    } else {
+        body.area_lab = document.getElementById('p-detalle').value;
+        body.certificaciones = document.getElementById('p-detalle2').value.split(',').map(s => s.trim()).filter(Boolean);
+    }
+
+    const resDiv = document.getElementById('resultado-personal');
+    try {
+        const r = await fetch(`${API}/api/personal`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+        });
+        const j = await r.json();
+        if (r.status === 503) {
+            resDiv.className = 'resultado error';
+            resDiv.textContent = `503 — ${j.error}`;
+        } else if (r.ok) {
+            resDiv.className = 'resultado ok';
+            resDiv.textContent = `Creado con id ${j.id}`;
+        } else {
+            resDiv.className = 'resultado error';
+            resDiv.textContent = `${r.status} — ${j.error}`;
+        }
+    } catch (e) {
+        resDiv.className = 'resultado error';
+        resDiv.textContent = 'No se pudo contactar la API: ' + e.message;
+    }
+});
+
+// ---------- Dashboard ----------
+async function cargarDashboard() {
+    try {
+        const r = await fetch(`${API}/api/dashboard/resumen`);
+        const j = await r.json();
+        document.getElementById('badge-dashboard').textContent = 'Servido por: ' + (j.servido_por || (r.ok ? 'RÉPLICA' : 'N/D'));
+        if (!r.ok) return;
+        document.getElementById('dashboard-stats').innerHTML = `
+            <div class="stat"><div class="num">${j.total_personal}</div><div class="lbl">personal</div></div>
+            <div class="stat"><div class="num">${j.total_expedientes}</div><div class="lbl">expedientes</div></div>
+        `;
+        const tbody = document.querySelector('#tabla-clinicas tbody');
+        tbody.innerHTML = j.clinicas.map(c => `<tr><td>${c.nombre}</td><td>${c.region}</td><td>${c.equipos_asignados}</td></tr>`).join('');
+    } catch (e) {
+        document.getElementById('badge-dashboard').textContent = 'Servido por: (sin conexión)';
+    }
+}
+cargarDashboard();
+
+// ---------- Carga de expediente XML ----------
+document.getElementById('form-expediente').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const resDiv = document.getElementById('resultado-expediente');
+    const body = {
+        id_paciente: Number(document.getElementById('e-paciente').value),
+        xsd_nombre: 'expediente_clinico',
+        xsd_version: document.getElementById('e-version').value,
+        documento: document.getElementById('e-xml').value
+    };
+    try {
+        const r = await fetch(`${API}/api/expedientes`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+        });
+        const j = await r.json();
+        if (r.status === 422) {
+            resDiv.className = 'resultado error';
+            resDiv.textContent = `RECHAZADO por el validador XSD:\n\n${j.detalle}`;
+        } else if (r.ok) {
+            resDiv.className = 'resultado ok';
+            resDiv.textContent = `Aceptado. Expediente id ${j.id}`;
+        } else {
+            resDiv.className = 'resultado error';
+            resDiv.textContent = `${r.status} — ${j.error}\n${j.detalle || ''}`;
+        }
+    } catch (e) {
+        resDiv.className = 'resultado error';
+        resDiv.textContent = 'No se pudo contactar la API: ' + e.message;
+    }
+});
+
+// ---------- Telemetría ----------
+async function cargarAlertas() {
+    try {
+        const r = await fetch(`${API}/api/telemetria/alertas`);
+        const j = await r.json();
+        document.getElementById('badge-telemetria').textContent = 'Servido por: ' + (j.servido_por || 'N/D');
+        const tbody = document.querySelector('#tabla-alertas tbody');
+        tbody.innerHTML = (j.alertas || []).map(a =>
+            `<tr class="alerta-fila"><td>${a._id}</td><td>${a.total_alertas}</td></tr>`
+        ).join('');
+    } catch (e) {
+        document.getElementById('badge-telemetria').textContent = 'Servido por: (sin conexión)';
+    }
+}
+</script>
+
+</body>
+</html>

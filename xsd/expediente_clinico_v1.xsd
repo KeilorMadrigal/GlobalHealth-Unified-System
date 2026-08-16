@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:gh="urn:globalhealth:expediente:v1"
+           targetNamespace="urn:globalhealth:expediente:v1"
+           elementFormDefault="qualified">
+
+    <!-- Restricción de código CIE-10: letra + dos dígitos + subcategoría
+         opcional. Deliberadamente estricta para poder demostrar rechazos. -->
+    <xs:simpleType name="codigoCIE10">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[A-TV-Z][0-9]{2}(\.[0-9]{1,2})?"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="diagnosticoType">
+        <xs:sequence>
+            <xs:element name="codigo" type="gh:codigoCIE10"/>
+            <xs:element name="descripcion" type="xs:string"/>
+            <xs:element name="fecha" type="xs:date"/>
+            <xs:element name="medicoResponsable" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="tratamientoType">
+        <xs:sequence>
+            <xs:element name="medicamento" type="xs:string"/>
+            <xs:element name="dosis" type="xs:string"/>
+            <xs:element name="frecuencia" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="pacienteType">
+        <xs:sequence>
+            <xs:element name="nombre" type="xs:string"/>
+            <xs:element name="fechaNacimiento" type="xs:date"/>
+        </xs:sequence>
+        <xs:attribute name="id" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:element name="expediente">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="paciente" type="gh:pacienteType"/>
+                <xs:element name="diagnosticos">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="diagnostico" type="gh:diagnosticoType"
+                                        minOccurs="1" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="tratamientos">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="tratamiento" type="gh:tratamientoType"
+                                        minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="firmaDigital" type="xs:string"/>
+            </xs:sequence>
+            <xs:attribute name="version" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

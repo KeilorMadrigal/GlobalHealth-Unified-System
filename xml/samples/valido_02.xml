@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<expediente xmlns="urn:globalhealth:expediente:v1" version="1.0">
+  <paciente id="PAC-0002">
+    <nombre>Carlos Méndez</nombre>
+    <fechaNacimiento>1978-09-03</fechaNacimiento>
+  </paciente>
+  <diagnosticos>
+    <diagnostico>
+      <codigo>E11</codigo>
+      <descripcion>Diabetes mellitus tipo 2</descripcion>
+      <fecha>2026-03-05</fecha>
+      <medicoResponsable>Dra. Ana Rodríguez</medicoResponsable>
+    </diagnostico>
+  </diagnosticos>
+  <tratamientos>
+  </tratamientos>
+  <firmaDigital>9a1c3e5f7b9d1f3a5c7e9b1d3f5a7c9e</firmaDigital>
+</expediente>

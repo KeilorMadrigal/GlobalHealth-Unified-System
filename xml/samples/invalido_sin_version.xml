@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- INVÁLIDO: falta el atributo obligatorio 'version' en <expediente>. -->
+<expediente xmlns="urn:globalhealth:expediente:v1">
+  <paciente id="PAC-0007">
+    <nombre>Diego Vargas</nombre>
+    <fechaNacimiento>1995-02-17</fechaNacimiento>
+  </paciente>
+  <diagnosticos>
+    <diagnostico>
+      <codigo>J00</codigo>
+      <descripcion>Rinofaringitis aguda</descripcion>
+      <fecha>2026-05-02</fecha>
+      <medicoResponsable>Dra. Ana Rodríguez</medicoResponsable>
+    </diagnostico>
+  </diagnosticos>
+  <tratamientos>
+  </tratamientos>
+  <firmaDigital>2a4c6e8b0d2f4a6c8e0b2d4f6a8c0e2b</firmaDigital>
+</expediente>
